@@ -4,10 +4,16 @@ import org.hamcrest.AbstractMatcherTest;
 import org.hamcrest.Matcher;
 
 import static org.hamcrest.text.IsEqualCompressingWhiteSpace.equalToCompressingWhiteSpace;
+import static org.hamcrest.text.IsEqualCompressingWhiteSpace.*;
 
 public class IsEqualCompressingWhiteSpaceTest extends AbstractMatcherTest {
 
-    private final Matcher<String> matcher = equalToCompressingWhiteSpace(" Hello World   how\n are we? ");
+    private final Matcher<String> matcher = equalToCompressingMIX(" Hello World   how\n are we? ");
+    private final Matcher<String> SPACEmatcher = equalToCompressingSPACE(" Hello World   how       are we? ");
+    private final Matcher<String> TABmatcher = equalToCompressingTAB(" Hello World   how\t are\t\t we? ");
+    private final Matcher<String> LINEFEEDmatcher = equalToCompressingLINEFEED(" Hello World   how\n are we? ");
+    private final Matcher<String> FORMFEEDmatcher = equalToCompressingFORMFEED(" Hello World   how\f are\f\f we? ");
+    private final Matcher<String> CARRIAGERETURNmatcher = equalToCompressingCARRIAGERETURN(" Hello \r World   how \r\r are we? ");
 
     @Override
     protected Matcher<?> createMatcher() {
@@ -44,5 +50,26 @@ public class IsEqualCompressingWhiteSpaceTest extends AbstractMatcherTest {
 
     public void testPassesIfWhitespacesContainsNoBreakSpace() {
         assertMatches(matcher, "Hello" + ((char)160) + "World how are we?");
+    }
+
+    public void testFailsIfwordsAreSameButWhiteSpaceDiffers()
+    {
+        assertDoesNotMatch(SPACEmatcher, " Hello World   how\n are we? ");
+        assertDoesNotMatch(TABmatcher, " Hello World   how\n are we? ");
+        assertDoesNotMatch(LINEFEEDmatcher, " Hello World   how\r are we? ");
+    }
+
+    public void testPassesIfwordsAreSameButMixWhiteSpace()
+    {
+        assertMatches(matcher, "Hello\f\f World\t how      are\r we?\n\n");
+    }
+
+    public void testUnitWhiteSpace()
+    {
+        assertMatches(SPACEmatcher, "  Hello     World    how              are we?   ");
+        assertMatches(TABmatcher, " Hello World   how \t are   we? \t");
+        assertMatches(LINEFEEDmatcher, "   Hello World   how\n are  \n we? ");
+        assertMatches(FORMFEEDmatcher, " Hello   World\f   how are we? ");
+        assertMatches(CARRIAGERETURNmatcher, "Hello World how are we?");
     }
 }
